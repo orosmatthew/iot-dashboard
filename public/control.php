@@ -1,6 +1,7 @@
 <?php
 
-function write_state($data, $file) {
+function write_state($data, $file)
+{
     $file = fopen($file, "w");
     fwrite($file, json_encode($data));
     fclose($file);
@@ -13,6 +14,16 @@ if (isset($_POST['light'])) {
     } else {
         exec(realpath("../scripts/led.py") . " on");
         write_state(["state" => "on"], realpath("state/led.json"));
+    }
+}
+
+if (isset($_POST['lock'])) {
+    if (strcmp($_POST['lock'], "lock") == 0) {
+        exec(realpath("../scripts/servo.py") . " lock");
+        write_state(["state" => "locked"], realpath("state/lock.json"));
+    } else {
+        exec(realpath("../scripts/servo.py") . " unlock");
+        write_state(["state" => "unlocked"], realpath("state/lock.json"));
     }
 }
 

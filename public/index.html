@@ -41,40 +41,76 @@
         </nav>
         <div class="row">
             <div class="col-lg-4 col-md-12">
-                <div
-                    class="control-col container mt-3 p-3"
-                    style="text-align: center"
-                >
-                    <button id="light_btn" name="led_toggle" class="img-btn">
-                        <img
-                            draggable="false"
-                            id="light_img"
-                            src="/img/light-off.png"
-                            width="100%"
-                        />
-                    </button>
-                    <h2 class="mt-2">Light</h2>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-12">
-                <div
-                    class="control-col container mt-3 p-3"
-                    style="text-align: center"
-                >
-                    <button id="lock_btn" class="img-btn">
-                        <img
-                            draggable="false"
-                            id="lock_img"
-                            src="/img/lock-unlocked.png"
-                            width="100%"
-                        />
-                    </button>
-                    <h2 class="mt-2">Lock</h2>
+                <div class="control-col container mt-3 p-3">
+                    <div style="text-align: left; position: absolute">
+                        <div
+                            id="light_spinner"
+                            style="display: none"
+                            class="spinner-border text-secondary"
+                            role="status"
+                        ></div>
+                    </div>
+                    <div style="text-align: center">
+                        <button
+                            id="light_btn"
+                            name="led_toggle"
+                            class="img-btn"
+                        >
+                            <img
+                                draggable="false"
+                                id="light_img"
+                                src="/img/light-off.png"
+                                width="100%"
+                            />
+                        </button>
+                        <h2 class="mt-2">Light</h2>
+                    </div>
                 </div>
             </div>
             <div class="col-lg-4 col-md-12">
                 <div class="control-col container mt-3 p-3">
-                    <div style="text-align: right">
+                    <div style="text-align: left; position: absolute">
+                        <div
+                            id="lock_spinner"
+                            style="display: none"
+                            class="spinner-border text-secondary"
+                            role="status"
+                        ></div>
+                    </div>
+                    <div style="text-align: center">
+                        <button id="lock_btn" class="img-btn">
+                            <img
+                                draggable="false"
+                                id="lock_img"
+                                src="/img/lock-unlocked.png"
+                                width="100%"
+                            />
+                        </button>
+                        <h2 class="mt-2">Lock</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-12">
+                <div
+                    class="control-col container mt-3 p-3"
+                    style="position: relative"
+                >
+                    <div style="text-align: left; position: absolute">
+                        <div
+                            id="temp_spinner"
+                            style="display: none"
+                            class="spinner-border text-secondary"
+                            role="status"
+                        ></div>
+                    </div>
+                    <div
+                        style="
+                            text-align: right;
+                            position: absolute;
+                            right: 0;
+                            margin-right: 10px;
+                        "
+                    >
                         <button
                             id="temp-refresh-btn"
                             class="btn btn-outline-secondary"
@@ -84,7 +120,7 @@
                         </button>
                     </div>
 
-                    <div style="text-align: center; margin-top: -20px">
+                    <div style="text-align: center">
                         <p id="temp" class="num-indicator">&#176;F</p>
                         <h2 class="pb-4">Temperature</h2>
                         <p id="hum" class="num-indicator">%</p>
@@ -129,8 +165,10 @@
 
         function fetchLedStatus() {
             $.ajax({
-                url: "/state/led.json",
+                type: "GET",
+                url: "/status.php",
                 dataType: "json",
+                data: { device: "light" },
                 success: (result) => {
                     if (result.state == "on") {
                         ledOn = true;
@@ -145,8 +183,10 @@
 
         function fetchLockStatus() {
             $.ajax({
-                url: "/state/lock.json",
+                type: "GET",
+                url: "/status.php",
                 dataType: "json",
+                data: { device: "lock" },
                 success: (result) => {
                     if (result.state == "locked") {
                         locked = true;
@@ -155,14 +195,16 @@
                         locked = false;
                         $("#lock_img").attr("src", "/img/lock-unlocked.png");
                     }
-                }
+                },
             });
         }
 
         function fetchTemp() {
             $.ajax({
-                url: "/state/temp.json",
+                type: "GET",
+                url: "/status.php",
                 dataType: "json",
+                data: { device: "temp" },
                 success: (result) => {
                     temp = result.temp;
                     $("#temp").html(temp + "&#176;F");
@@ -173,30 +215,45 @@
         }
 
         function updateTemp() {
+            $("#temp_spinner").show();
             $.ajax({
                 type: "POST",
                 url: "/control.php",
                 data: { temp: null },
                 success: () => {
                     fetchTemp();
+                    $("#temp_spinner").hide();
                 },
             });
         }
 
         $("#light_btn").click(() => {
+            $("#light_spinner").show();
             $.ajax({
                 type: "POST",
                 url: "/control.php",
                 data: { light: ledOn ? "off" : "on" },
                 success: () => {
                     fetchLedStatus();
+                    $("#light_spinner").hide();
+                },
+            });
+        });
+
+        $("#lock_btn").click(() => {
+            $("#lock_spinner").show();
+            $.ajax({
+                type: "POST",
+                url: "/control.php",
+                data: { lock: locked ? "unlock" : "lock" },
+                success: () => {
+                    fetchLockStatus();
+                    $("#lock_spinner").hide();
                 },
             });
         });
 
         $("#temp-refresh-btn").click(() => {
-            $("#temp").html("&#176;F");
-            $("#hum").html("%");
             updateTemp();
         });
 
