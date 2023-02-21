@@ -1,3 +1,27 @@
+<?php
+
+$led_state = json_decode(file_get_contents(realpath('state/led.json')), false)->state;
+
+
+if (isset($_POST['led_toggle'])) {
+    if (strcmp($led_state, "on") == 0) {
+        exec(realpath("../scripts/led.py") . " off");
+        $led_data = ["state" => "off"];
+        $file = fopen("state/led.json", "w");
+        fwrite($file, json_encode($led_data));
+        fclose($file);
+    } else {
+        exec(realpath("../scripts/led.py") . " on");
+        $led_data = ["state" => "on"];
+        $file = fopen("state/led.json", "w");
+        fwrite($file, json_encode($led_data));
+        fclose($file);
+    }
+}
+
+$led_state = json_decode(file_get_contents(realpath('state/led.json')), false)->state;
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -25,7 +49,10 @@
     <div class="row">
         <div class="col-lg-4 col-md-12">
             <div class="control-col container mt-3 p-3" style="text-align:center">
-                <button id="light_btn" class="img-btn"><img draggable="false" id="light_img" src="/img/light-off.png" width="100%" /></button>
+                <form method="post">
+                    <button id="light_btn" name="led_toggle" class="img-btn"><img draggable="false" id="light_img" src="/img/light-off.png" width="100%" /></button>
+                </form>
+
                 <h2 class="mt-2">Light</h2>
                 <!-- <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" checked>
@@ -69,21 +96,24 @@
 </style>
 
 <script>
-var lightOn = false;
+    let ledState = "<?php echo $led_state ?>";
+    let lightImg = document.getElementById("light_img");
 
-let lightBtn = document.getElementById("light_btn");
-let lightImg = document.getElementById("light_img");
-lightBtn.addEventListener("click", () => {
-    if (lightOn) {
-        lightOn = false;
-        lightImg.src="/img/light-off.png";
-    } else {
-        lightOn = true;
-        lightImg.src="/img/light-on.png";
+    function changeLed(on) {
+        if (on) {
+            ledState = "on";
+            lightImg.src = "/img/light-on.png";
+        } else {
+            ledState = "off";
+            lightImg.src = "/img/light-off.png";
+        }
     }
 
-});
-    
+    if (ledState == "on") {
+        changeLed(true);
+    } else {
+        changeLed(false);
+    }
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
