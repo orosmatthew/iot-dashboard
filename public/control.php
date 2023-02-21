@@ -1,17 +1,18 @@
 <?php
+
+function write_state($data, $file) {
+    $file = fopen($file, "w");
+    fwrite($file, json_encode($data));
+    fclose($file);
+}
+
 if (isset($_POST['light'])) {
     if (strcmp($_POST['light'], "off") == 0) {
         exec(realpath("../scripts/led.py") . " off");
-        $led_data = ["state" => "off"];
-        $file = fopen("state/led.json", "w");
-        fwrite($file, json_encode($led_data));
-        fclose($file);
+        write_state(["state" => "off"], realpath("state/led.json"));
     } else {
         exec(realpath("../scripts/led.py") . " on");
-        $led_data = ["state" => "on"];
-        $file = fopen("state/led.json", "w");
-        fwrite($file, json_encode($led_data));
-        fclose($file);
+        write_state(["state" => "on"], realpath("state/led.json"));
     }
 }
 
@@ -20,9 +21,6 @@ if (isset($_POST['temp'])) {
     if (strcmp(rtrim($output), "error") !== 0) {
         $temp = explode(" ", rtrim($output))[0];
         $hum = explode(" ", rtrim($output))[1];
-        $temp_data = ["temp" => $temp, "hum" => $hum];
-        $file = fopen("state/temp.json", "w");
-        fwrite($file, json_encode($temp_data));
-        fclose($file);
+        write_state(["temp" => $temp, "hum" => $hum], realpath("state/temp.json"));
     }
 }
