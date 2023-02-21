@@ -9,7 +9,7 @@ try:
     temp_c = dht_device.temperature
     temp_f = temp_c * (9 / 5) + 32
     humidity = dht_device.humidity
-    print(str(temp_f) + " " + str(humidity))
+    print(f'{temp_f:.1f} {humidity:.1f}')
 except RuntimeError as error:
     print("error")
 
