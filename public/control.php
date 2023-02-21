@@ -14,3 +14,15 @@ if (isset($_POST['light'])) {
         fclose($file);
     }
 }
+
+if (isset($_POST['temp'])) {
+    $output = shell_exec(realpath("../scripts/temp.py"));
+    if (strcmp(rtrim($output), "error") !== 0) {
+        $temp = explode(" ", rtrim($output))[0];
+        $hum = explode(" ", rtrim($output))[1];
+        $temp_data = ["temp" => $temp, "hum" => $hum];
+        $file = fopen("state/temp.json", "w");
+        fwrite($file, json_encode($temp_data));
+        fclose($file);
+    }
+}

@@ -61,12 +61,29 @@
                 <div class="control-col container mt-3 p-3"></div>
             </div>
             <div class="col-lg-4 col-md-12">
-                <div class="control-col container mt-3 p-3"></div>
+                <div class="control-col container mt-3 p-3">
+                    <div style="text-align: right">
+                        <button id="temp-refresh-btn" class="btn btn-outline-secondary" type="button">
+                            Refresh
+                        </button>
+                    </div>
+
+                    <div style="text-align: center; margin-top: -20px;">
+                        <p id="temp" class="num-indicator">&#176;F</p>
+                        <h2 class="pb-4">Temperature</h2>
+                        <p id="hum" class="num-indicator">%</p>
+                        <h2>Humidity</h2>
+                    </div>
+                </div>
             </div>
         </div>
     </body>
 
     <style>
+        .num-indicator {
+            font-size: 62px;
+        }
+
         .img-btn {
             background-color: rgba(0, 0, 0, 0);
             border-color: rgba(0, 0, 0, 0);
@@ -90,6 +107,8 @@
 
     <script>
         let ledOn = false;
+        let temp = 0.0;
+        let hum = 0.0;
 
         function fetchLedStatus() {
             $.ajax({
@@ -100,9 +119,33 @@
                         ledOn = true;
                         $("#light_img").attr("src", "/img/light-on.png");
                     } else {
-                        ledOn = false
+                        ledOn = false;
                         $("#light_img").attr("src", "/img/light-off.png");
                     }
+                },
+            });
+        }
+
+        function fetchTemp() {
+            $.ajax({
+                url: "/state/temp.json",
+                dataType: "json",
+                success: (result) => {
+                    temp = result.temp;
+                    $("#temp").html(temp + "&#176;F");
+                    hum = result.hum;
+                    $("#hum").html(hum + "%");
+                },
+            });
+        }
+
+        function updateTemp() {
+            $.ajax({
+                type: "POST",
+                url: "/control.php",
+                data: { temp: null },
+                success: () => {
+                    fetchTemp();
                 },
             });
         }
@@ -114,11 +157,18 @@
                 data: { light: ledOn ? "off" : "on" },
                 success: () => {
                     fetchLedStatus();
-                }
+                },
             });
         });
 
+        $("#temp-refresh-btn").click(() => {
+            $("#temp").html("&#176;F");
+            $("#hum").html("%");
+            updateTemp();
+        });
+
         fetchLedStatus();
+        updateTemp();
     </script>
 
     <script
